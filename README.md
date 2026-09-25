@@ -1,6 +1,7 @@
 # AgriSense 3D: Agentic Crop Health Digital Twin (v2)
 
-DESIGNED & DEVELOPED BY NIKHIL CHARY SRIRAMOJU
+DESIGNED & DEVELOPED BY 
+# NIKHIL CHARY SRIRAMOJU
 
 ## What changed in v2 (real-world upgrade)
 - **Real CNN**: leaf photos are now classified using MobileNetV1 (a real pretrained convolutional network) via TensorFlow.js, run entirely in-browser.
