@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>AgriSense 3D | Agentic Crop Health Digital Twin</title>
+<meta name="description" content="AgriSense 3D: a 3D digital twin of a farm field with real CNN (MobileNet) leaf-disease classification, an agentic RAG advisor and a Dockerized backend.">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Figtree:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#06110d;--panel:rgba(9,24,19,.9);--bone:#e8f5ec;--mut:#8fae9d;--g:#4dff9d;--a:#ffc857;--r:#ff5c5c;--line:rgba(120,190,150,.22)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--bone);font-family:Figtree,system-ui,sans-serif;line-height:1.5}
+:focus-visible{outline:2px solid var(--g);outline-offset:2px}
+#app{position:relative;height:100svh;min-height:600px;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#0f2a20,var(--bg) 72%)}
+#app canvas.gl{display:block;width:100%;height:100%;touch-action:pan-y;cursor:grab}
+.hd{position:absolute;left:0;right:0;top:0;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 0;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
+.logo{font:800 24px/1 Syne,sans-serif}.logo small{display:block;font:500 12px Figtree,sans-serif;color:var(--mut);margin-top:4px}
+.st{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end;pointer-events:auto}
+.st div,.badge{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:6px 12px;font-size:11px;color:var(--mut);min-width:78px}
+.st b{display:block;font:700 18px/1.1 Syne,sans-serif;color:var(--bone)}
+.badge{cursor:pointer;font-weight:700}
+#panel{position:absolute;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-width:660px;margin:0 auto;max-height:58svh;overflow-y:auto;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px 16px;backdrop-filter:blur(12px)}
+#panel h2{margin:0;font:700 18px Syne,sans-serif}
+.row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.mut{color:var(--mut);font-size:13px}
+.btn{padding:9px 16px;border:0;border-radius:11px;background:var(--g);color:#032012;font:700 14px Figtree,sans-serif;cursor:pointer}
+.btn.sec{background:transparent;border:1px solid var(--line);color:var(--bone)}
+.btn:disabled{opacity:.5}
+input[type=file]{color:var(--mut);font-size:12px;max-width:180px}
+.maps{display:flex;gap:10px;margin:12px 0 6px;flex-wrap:wrap}
+.maps figure{margin:0;font-size:11px;color:var(--mut);text-align:center}
+.maps canvas,.maps img{width:84px;height:84px;object-fit:cover;image-rendering:pixelated;border:1px solid var(--line);border-radius:8px;display:block}
+.bar{display:grid;grid-template-columns:120px 1fr 38px;gap:8px;align-items:center;font-size:12px;margin:3px 0}
+.bar i{display:block;height:7px;border-radius:9px;background:var(--g)}
+.step{border-left:3px solid var(--g);padding:5px 10px;margin-top:7px;font-size:13px;background:rgba(77,255,157,.05);border-radius:0 9px 9px 0}
+.step b{display:block;font-size:12px;color:var(--g)}
+.step.w{border-color:var(--a)}.step.w b{color:var(--a)}
+.step.ok{border-color:#7fd0ff;background:rgba(127,208,255,.07)}.step.ok b{color:#7fd0ff}
+.calib{display:grid;gap:8px;margin-top:10px}
+.crow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px}
+.crow b{width:110px}
+.wrap{max-width:980px;margin:0 auto;padding:64px 18px 0}
+h3{font:800 clamp(24px,5vw,36px)/1.1 Syne,sans-serif;margin:0 0 8px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:18px}
+.tiles div{border:1px solid var(--line);border-radius:14px;padding:14px;background:#0a1d16;color:var(--mut);font-size:13px}
+.tiles b{display:block;color:var(--bone);font-size:15px;margin-bottom:2px}
+.exp{border:1px solid var(--line);border-radius:14px;padding:16px;background:#0a1d16;margin-top:16px}
+.exp h4{margin:0 0 6px;font-size:15px;color:var(--g)}
+.exp p{margin:4px 0;font-size:13.5px;color:#c8ded0}
+pre{background:#050d0a;border:1px solid var(--line);border-radius:12px;padding:14px;overflow-x:auto;font-size:12.5px;color:#b8ffd9}
+footer{margin-top:70px;padding:40px 18px calc(40px + env(safe-area-inset-bottom,0px));text-align:center;border-top:1px solid var(--line);background:linear-gradient(#06110d,#0a2118)}
+footer .cr{font:800 clamp(18px,4.5vw,30px)/1.2 Syne,sans-serif;letter-spacing:.02em}
+footer .l{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+footer a{color:var(--bone);text-decoration:none;font-weight:600;font-size:14px;padding:8px 16px;border:1px solid var(--line);border-radius:99px}
+@media(max-width:560px){.st div:nth-child(3){display:none}.bar{grid-template-columns:100px 1fr 36px}}
+</style>
+</head>
+<body>
+<section id="app">
+  <div class="hd">
+    <div class="logo">AgriSense 3D<small>Agentic crop-health digital twin</small></div>
+    <div class="st">
+      <div><b id="s1">0%</b>field health</div><div><b id="s2">0</b>plots at risk</div><div><b id="s3">0</b>treatments</div>
+      <div class="badge" id="modelBadge" role="button" tabindex="0">Loading model…</div>
+    </div>
+  </div>
+  <div id="panel" aria-live="polite">
+    <div class="row"><h2 id="pt">Select a plot</h2>
+      <div style="display:flex;gap:8px"><button class="btn sec" id="calBtn">Calibrate with real photos</button><button class="btn" id="scan" disabled>Scan leaf</button></div></div>
+    <div class="mut" id="pm">Drag to rotate the field. Tap any plant to inspect it, then upload or scan its leaf.</div>
+    <div id="calib" hidden class="calib"></div>
+    <input type="file" id="upload" accept="image/*" hidden>
+    <div class="maps" id="maps" hidden></div><div id="cls"></div><div id="log"></div>
+  </div>
+</section>
+
+<section class="wrap">
+  <h3>What this actually does</h3>
+  <div class="exp">
+    <h4>Problem</h4><p>Farmers spot crop disease late, and generic treatment lookups don't verify whether the advice matches what's actually on the leaf.</p>
+    <h4>Approach</h4><p>Real photo &rarr; MobileNet (a pretrained CNN, loaded via TensorFlow.js) turns the leaf into a 1024-number embedding. That embedding is compared by cosine similarity to a few reference embeddings per disease class &mdash; a real few-shot transfer-learning technique, not a lookup table. The agent then retrieves treatment text with TF-IDF, verifies the retrieved source actually names the diagnosed disease, and retries with a narrower query if it doesn't, before acting on the plot.</p>
+    <h4>Honest limits</h4><p>The built-in reference photos are a small demo set so the app works out of the box; classification quality depends entirely on the reference photos loaded. Use "Calibrate with real photos" to upload your own labelled examples per class &mdash; more and cleaner references directly improve accuracy. For production accuracy, train a dedicated CNN on a labelled dataset such as PlantVillage and serve it from the included FastAPI backend instead of doing few-shot matching in the browser (see README).</p>
+  </div>
+  <div class="tiles">
+    <div><b>Vision (real CNN)</b>MobileNetV1 via TensorFlow.js extracts real image features from uploaded leaf photos in-browser.</div>
+    <div><b>Few-shot classification</b>Cosine similarity to per-class reference embeddings you can recalibrate any time.</div>
+    <div><b>Agentic RAG</b>Plan, retrieve (TF-IDF), verify the source matches the diagnosis, self-correct, then act.</div>
+    <div><b>Docker</b>nginx web service and a FastAPI service (`/scan`, `/ask`) for a real deployment path.</div>
+  </div>
+  <pre>docker compose up --build
+# web: http://localhost:8080   api docs: http://localhost:8000/docs</pre>
+</section>
+
+<footer>
+  <div class="cr">DESIGNED &amp; DEVELOPED BY NIKHIL CHARY SRIRAMOJU</div>
+  <div class="mut" style="margin-top:8px">Agentic AI &middot; RAG &middot; CNN (MobileNet) &middot; Docker</div>
+  <div class="l"><a href="https://github.com/Nikhil-creat" target="_blank" rel="noopener">GitHub</a><a href="https://in.linkedin.com/in/nikhil-chary-sriramoju-95041b38a" target="_blank" rel="noopener">LinkedIn</a><a href="mailto:sriramojunikhil66@gmail.com">Email</a></div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet@2.1.1/dist/mobilenet.min.js"></script>
+<script>
+const $=id=>document.getElementById(id),sleep=ms=>new Promise(r=>setTimeout(r,ms));
+const DIS=["Healthy","Leaf rust","Late blight","Powdery mildew"];
+const KB=[
+{k:"Healthy",t:"Healthy crop: keep weekly scouting, water at the base of plants in the morning and keep nutrients balanced. No treatment needed."},
+{k:"Leaf rust",t:"Leaf rust: orange pustules on leaves. Remove badly infected leaves, apply a labelled triazole or strobilurin fungicide, avoid overhead irrigation and prefer resistant varieties next season."},
+{k:"Late blight",t:"Late blight: dark water-soaked blotches that spread fast in cool humid weather. Remove infected plants, apply a protectant such as copper-based fungicide, and keep leaves dry."},
+{k:"Powdery mildew",t:"Powdery mildew: white powdery patches on leaves. Improve airflow, avoid excess nitrogen, and apply sulfur or potassium bicarbonate at the first sign."},
+{k:"General",t:"Always confirm chemical choice and dose with a local agronomist or agricultural extension office, and follow the product label and pre-harvest interval."}];
+const STOP=new Set("the a an of for to and is on in what should i do with how".split(" "));
+const tok=s=>s.toLowerCase().replace(/[^a-z\s]/g," ").split(/\s+/).filter(w=>w&&!STOP.has(w));
+const docs=KB.map(d=>tok(d.k+" "+d.t)),df={};docs.forEach(d=>new Set(d).forEach(w=>df[w]=(df[w]||0)+1));
+const idf=w=>Math.log(1+docs.length/(1+(df[w]||0)));
+function retrieve(q,n=2){return docs.map((d,i)=>{let s=0;q.forEach(w=>{if(d.includes(w))s+=idf(w)});return{i,s}}).sort((a,b)=>b.s-a.s).slice(0,n)}
+
+const COLS=8,ROWS=6,plots=[];
+for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const d=Math.random()<.42?1+Math.floor(Math.random()*3):0;
+ plots.push({id:"ABCDEF"[r]+(c+1),c,r,d,h:d?.25+Math.random()*.4:.82+Math.random()*.16,treated:false,scanned:false})}
+function heat(h){const a=new THREE.Color(0xff5c5c),b=new THREE.Color(0xffc857),g=new THREE.Color(0x4dff9d);return h<.5?a.clone().lerp(b,h/.5):b.clone().lerp(g,(h-.5)/.5)}
+
+const app=$("app"),R=new THREE.WebGLRenderer({antialias:true,alpha:true});
+R.setPixelRatio(Math.min(devicePixelRatio,2));R.domElement.className="gl";app.prepend(R.domElement);
+const S=new THREE.Scene(),C=new THREE.PerspectiveCamera(45,1,.1,100),field=new THREE.Group();S.add(field);
+const ground=new THREE.Mesh(new THREE.BoxGeometry(COLS*1.2+.6,.2,ROWS*1.2+.6),new THREE.MeshBasicMaterial({color:0x0c261c}));ground.position.y=-.2;field.add(ground);
+const grid=new THREE.GridHelper(Math.max(COLS,ROWS)*1.2+.6,COLS,0x1d5a40,0x123a2a);grid.position.y=-.09;field.add(grid);
+const cone=new THREE.ConeGeometry(.42,1,10),tile=new THREE.BoxGeometry(1,.08,1);
+plots.forEach(p=>{
+ const x=(p.c-(COLS-1)/2)*1.2,z=(p.r-(ROWS-1)/2)*1.2;
+ p.tile=new THREE.Mesh(tile,new THREE.MeshBasicMaterial({color:0x14382a}));p.tile.position.set(x,-.04,z);
+ p.mesh=new THREE.Mesh(cone,new THREE.MeshBasicMaterial({color:0x4dff9d}));p.mesh.position.set(x,.5,z);p.mesh.userData.p=p;
+ field.add(p.tile,p.mesh)});
+const ring=new THREE.Mesh(new THREE.RingGeometry(.62,.7,32),new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.visible=false;field.add(ring);
+let yaw=.5,vy=0,drag=false,lx=0,moved=0,cur=null;
+const ray=new THREE.Raycaster(),mv=new THREE.Vector2(),reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+function sz(){const w=app.clientWidth,h=app.clientHeight;R.setSize(w,h);C.aspect=w/h;C.updateProjectionMatrix();const d=w/h<.8?19:13;C.position.set(0,d*.72,d*.78);C.lookAt(0,-1,0)}
+addEventListener("resize",sz);sz();
+R.domElement.addEventListener("pointerdown",e=>{drag=true;lx=e.clientX;moved=0});
+addEventListener("pointermove",e=>{if(!drag)return;const dx=e.clientX-lx;lx=e.clientX;moved+=Math.abs(dx);yaw+=dx*.006;vy=dx*.006});
+addEventListener("pointercancel",()=>drag=false);
+addEventListener("pointerup",e=>{if(!drag)return;drag=false;if(moved<6){const r=R.domElement.getBoundingClientRect();
+ mv.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1);ray.setFromCamera(mv,C);
+ const h=ray.intersectObjects(plots.map(p=>p.mesh))[0];if(h)choose(h.object.userData.p)}});
+function choose(p){cur=p;$("log").innerHTML="";$("maps").hidden=true;$("cls").innerHTML="";
+ ring.position.set(p.mesh.position.x,.02,p.mesh.position.z);ring.visible=true;$("scan").disabled=!modelReady;
+ $("pt").textContent="Plot "+p.id;info()}
+function info(){const p=cur;$("pm").textContent=`Health ${(p.h*100).toFixed(0)}%. `+(p.treated?"Treatment scheduled, recovering.":p.scanned?"Scanned.":"Upload a leaf photo, then tap Scan.")+" Use 'Calibrate' to teach the model your own reference photos."}
+function loop(now){const tm=now/1000;if(!drag){if(!reduce&&!cur)yaw+=.0015;yaw+=vy;vy*=.92}field.rotation.y=yaw;
+ plots.forEach(p=>{p.mesh.material.color.copy(heat(p.h));p.mesh.scale.y=.5+p.h*.9;p.mesh.position.y=.25+p.h*.45;
+  p.mesh.rotation.z=reduce?0:Math.sin(tm*1.4+p.c+p.r)*.05});
+ R.render(S,C);requestAnimationFrame(loop)}requestAnimationFrame(loop);
+setInterval(()=>{plots.forEach(p=>{if(p.treated)p.h=Math.min(.95,p.h+.02);else if(p.d)p.h=Math.max(.08,p.h-.004)});stats();if(cur)info()},1200);
+function stats(){const a=plots.reduce((s,p)=>s+p.h,0)/plots.length;$("s1").textContent=(a*100).toFixed(0)+"%";$("s2").textContent=plots.filter(p=>p.h<.5).length;$("s3").textContent=plots.filter(p=>p.treated).length}stats();
+
+let net=null,modelReady=false;
+const refs={};
+function synthLeaf(d){const c=document.createElement("canvas");c.width=c.height=64;const x=c.getContext("2d");
+ x.fillStyle="#3f9a3f";x.fillRect(0,0,64,64);
+ for(let i=0;i<300;i++){x.fillStyle=`rgba(${40+Math.random()*30|0},${130+Math.random()*50|0},50,.5)`;x.fillRect(Math.random()*64,Math.random()*64,2,2)}
+ const blob=(n,rmin,rmax,col)=>{for(let i=0;i<n;i++){x.fillStyle=col;x.beginPath();x.arc(6+Math.random()*52,6+Math.random()*52,rmin+Math.random()*(rmax-rmin),0,6.283);x.fill()}};
+ if(d===1)blob(16,1,2.2,"#c8641e");if(d===2)blob(4,5,8,"#3b2a14");if(d===3)blob(7,3,5,"#dfe6dc");
+ return c}
+async function embed(imgEl){const t=tf.tidy(()=>net.infer(imgEl,true));const arr=await t.data();t.dispose();return arr}
+function cos(a,b){let d=0,na=0,nb=0;for(let i=0;i<a.length;i++){d+=a[i]*b[i];na+=a[i]*a[i];nb+=b[i]*b[i]}return d/(Math.sqrt(na)*Math.sqrt(nb)+1e-9)}
+async function buildDemoReferences(){for(let d=0;d<4;d++){refs[DIS[d]]=[];for(let k=0;k<3;k++){const c=synthLeaf(d);refs[DIS[d]].push(await embed(c))}}}
+async function initModel(){
+ try{net=await mobilenet.load({version:1,alpha:0.5});await buildDemoReferences();modelReady=true;
+  $("modelBadge").textContent="MobileNet ready · demo refs";if(cur)$("scan").disabled=false}
+ catch(e){$("modelBadge").textContent="Model failed to load"}}
+initModel();
+$("modelBadge").onclick=()=>{$("calib").hidden=!$("calib").hidden;renderCalib()};
+function renderCalib(){
+ $("calib").innerHTML=DIS.map(d=>`<div class="crow"><b>${d}</b><span class="mut">${(refs[d]||[]).length} refs</span><input type="file" accept="image/*" data-cls="${d}" class="cal-in"></div>`).join("")
+  +'<div class="mut">Uploading real photos here replaces the demo references for that class and improves real accuracy.</div>';
+ document.querySelectorAll(".cal-in").forEach(inp=>inp.onchange=async e=>{
+  const f=e.target.files[0];if(!f||!modelReady)return;const cls=inp.dataset.cls;
+  const img=new Image();img.onload=async()=>{const v=await embed(img);refs[cls]=[v,...(refs[cls]||[]).slice(0,4)];renderCalib();URL.revokeObjectURL(img.src)};img.src=URL.createObjectURL(f)});
+}
+$("calBtn").onclick=()=>{$("calib").hidden=!$("calib").hidden;renderCalib()};
+
+function step(cls,title,html){const e=document.createElement("div");e.className="step "+cls;e.innerHTML=`<b>${title}</b>${html}`;$("log").appendChild(e);$("panel").scrollTop=$("panel").scrollHeight}
+let pendingImg=null;
+$("upload").onchange=e=>{const f=e.target.files[0];if(!f)return;const img=new Image();img.onload=()=>{pendingImg=img};img.src=URL.createObjectURL(f)};
+$("scan").onclick=async()=>{
+ const p=cur;if(!p||!modelReady)return;$("scan").disabled=true;$("log").innerHTML="";$("maps").hidden=false;
+ let img=pendingImg,usedDemo=!pendingImg;
+ if(!img){const c=synthLeaf(p.d);img=new Image();await new Promise(res=>{img.onload=res;img.src=c.toDataURL()})}
+ $("maps").innerHTML='<figure><img id="m0"></figure>';$("m0").src=img.src;
+ step("","1. Vision (MobileNet embedding)","Extracting a real CNN feature vector from the uploaded image."+(usedDemo?" No photo chosen, so a demo leaf was used — upload one above for a real reading.":""));
+ await sleep(300);
+ const v=await embed(img);
+ const scores=DIS.map(d=>{const rs=refs[d]||[];if(!rs.length)return -1;return Math.max(...rs.map(r=>cos(v,r)))});
+ const mx=Math.max(...scores),ex=scores.map(s=>Math.exp((s-mx)*8)),sm=ex.reduce((a,b)=>a+b,0);
+ const probs=ex.map(e=>e/sm),best=probs.indexOf(Math.max(...probs));
+ $("cls").innerHTML=DIS.map((n,i)=>`<div class="bar"><span>${n}</span><i style="width:${(probs[i]*100).toFixed(0)}%"></i><span>${(probs[i]*100).toFixed(0)}%</span></div>`).join("");
+ step("ok","2. Classify (few-shot, cosine similarity)",`Best match: <b style="display:inline;color:inherit">${DIS[best]}</b> at ${(probs[best]*100).toFixed(0)}% against ${(refs[DIS[best]]||[]).length} reference embedding(s).`);
+ p.scanned=true;info();await sleep(400);
+ const name=DIS[best];
+ step("","3. Plan",`Goal: get grounded treatment advice for ${name} and act on plot ${p.id}.`);await sleep(350);
+ let q=tok(name+" treatment"),hits,ok=false;
+ for(let it=1;it<=2&&!ok;it++){
+  hits=retrieve(q);step("",`4. Retrieve (pass ${it})`,hits.map(h=>KB[h.i].k+" &middot; "+h.s.toFixed(2)).join(", "));await sleep(350);
+  ok=hits.some(h=>KB[h.i].k===name);
+  step(ok?"ok":"w","5. Verify",ok?"Top source matches the diagnosed condition.":"Source does not match the diagnosis. Retrying with the exact condition name.");await sleep(350);
+  if(!ok)q=tok(name+" "+name)}
+ const adv=hits.filter(h=>KB[h.i].k===name||KB[h.i].k==="General").map(h=>KB[h.i].t).join("<br><br>");
+ step("ok","Advice",adv||KB[4].t);await sleep(350);
+ if(best===0){step("","6. Act","No treatment needed. Plot stays under routine monitoring.")}
+ else{p.treated=true;step("","6. Act",`Treatment scheduled for plot ${p.id}. Watch its plant turn from red to green in the twin.`)}
+ pendingImg=null;$("upload").value="";stats();info();$("scan").disabled=false};
+</script>
+</body>
+</html>
